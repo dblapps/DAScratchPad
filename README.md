@@ -8,7 +8,7 @@ David B. Levi (https://github.com/dblapps)
 
 #### Overview
 
-DAScratchPad is a small UIView subclass that provides a simple drawing interface.  You can put this view anywhere in your UI, and your user can draw in it.  You can add UI controls to change drawing color, link width, and opacity.  You can also get the current image from the scratch pad, clear the current image, or replace the current image.
+DAScratchPad is a small UIView subclass that provides a simple drawing interface.  You can put this view anywhere in your UI, and your user can draw in it.  You can add UI controls to change drawing color, line width, and opacity.  You can also get the current image from the scratch pad, clear the current image, or replace the current image.
 
 An example xcode project is included that demonstrates simple usage. 
 
