@@ -175,9 +175,9 @@
 	size_t wd = (size_t)self.frame.size.width;
 	size_t ht = (size_t)self.frame.size.height;
 	
-	data = malloc(ht*wd*4);
+	void* tmpdata = malloc(ht*wd*4);
 	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef tmpBitmapContext = CGBitmapContextCreate(data, wd, ht, 8, wd*4, colorSpace, kCGImageAlphaPremultipliedLast);
+	CGContextRef tmpBitmapContext = CGBitmapContextCreate(tmpdata, wd, ht, 8, wd*4, colorSpace, kCGImageAlphaPremultipliedLast);
 	CFRelease(colorSpace);
 	CGContextTranslateCTM(tmpBitmapContext, 0.0f, self.frame.size.height);
 	CGContextScaleCTM(tmpBitmapContext, 1.0f, -1.0f);
@@ -188,7 +188,7 @@
 	UIImage *image = [UIImage imageWithCGImage:cgImage];
 	CFRelease(cgImage);
 	CGContextRelease(tmpBitmapContext);
-	free(data);
+	free(tmpdata);
 	return image;
 }
 
