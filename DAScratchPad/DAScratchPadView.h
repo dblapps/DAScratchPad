@@ -14,6 +14,7 @@
 
 @property (strong,nonatomic) UIColor* drawColor;
 @property (assign) CGFloat drawWidth;
+@property (assign) CGFloat drawOpacity;
 
 - (void) clearToColor:(UIColor*)color;
 

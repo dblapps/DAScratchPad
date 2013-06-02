@@ -20,6 +20,7 @@
 		4CA49E3F1759439000380086 /* DAViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CA49E3D1759439000380086 /* DAViewController_iPhone.xib */; };
 		4CA49E421759439000380086 /* DAViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 4CA49E401759439000380086 /* DAViewController_iPad.xib */; };
 		4CA49E4B175943D200380086 /* DAScratchPadView.m in Sources */ = {isa = PBXBuildFile; fileRef = 4CA49E4A175943D200380086 /* DAScratchPadView.m */; };
+		4CA49E76175BD59800380086 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CA49E75175BD59800380086 /* QuartzCore.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +43,7 @@
 		4CA49E411759439000380086 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/DAViewController_iPad.xib; sourceTree = "<group>"; };
 		4CA49E49175943D200380086 /* DAScratchPadView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DAScratchPadView.h; sourceTree = "<group>"; };
 		4CA49E4A175943D200380086 /* DAScratchPadView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DAScratchPadView.m; sourceTree = "<group>"; };
+		4CA49E75175BD59800380086 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4CA49E76175BD59800380086 /* QuartzCore.framework in Frameworks */,
 				4CA49E231759439000380086 /* UIKit.framework in Frameworks */,
 				4CA49E251759439000380086 /* Foundation.framework in Frameworks */,
 				4CA49E271759439000380086 /* CoreGraphics.framework in Frameworks */,
@@ -82,6 +85,7 @@
 				4CA49E221759439000380086 /* UIKit.framework */,
 				4CA49E241759439000380086 /* Foundation.framework */,
 				4CA49E261759439000380086 /* CoreGraphics.framework */,
+				4CA49E75175BD59800380086 /* QuartzCore.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -330,6 +334,7 @@
 				4CA49E471759439000380086 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

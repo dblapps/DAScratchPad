@@ -7,38 +7,28 @@
 //
 
 #import "DAScratchPadView.h"
-
+#import <QuartzCore/QuartzCore.h>
 
 @implementation DAScratchPadView
 {
-	void *data;
+	CGFloat _drawOpacity;
+	CALayer* drawLayer;
+	UIImage* image;
+	UIImage* drawImage;
 	CGPoint lastPoint;
-	CGContextRef bitmapContext;
-	UIColor* _drawColor;
-	CGFloat _drawWidth;
-	NSMutableArray* segments;
-}
-
-- (void) initBitmapContext
-{
-	size_t wd = (size_t)self.frame.size.width;
-	size_t ht = (size_t)self.frame.size.height;
-	data = malloc(ht*wd*4);
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	bitmapContext = CGBitmapContextCreate(data, wd, ht, 8, wd*4, colorSpace, kCGImageAlphaPremultipliedLast);
-	CFRelease(colorSpace);
-	CGContextSetLineCap(bitmapContext, kCGLineCapRound);
-	CGContextSetLineWidth(bitmapContext, _drawWidth);
-	CGContextSetStrokeColorWithColor(bitmapContext, _drawColor.CGColor);
-	[self clearToColor:self.backgroundColor];
 }
 
 - (void) initCommon
 {
 	_drawColor = [UIColor blackColor];
 	_drawWidth = 5.0f;
-	segments = [NSMutableArray array];
-	[self initBitmapContext];
+	_drawOpacity = 1.0f;
+	drawLayer = [[CALayer alloc] init];
+	drawLayer.frame = self.layer.frame;
+	image = nil;
+	drawImage = nil;
+	[self.layer addSublayer:drawLayer];
+	[self clearToColor:self.backgroundColor];
 }
 
 - (id) initWithFrame:(CGRect)frame {
@@ -58,55 +48,18 @@
 
 - (void) layoutSubviews
 {
-	CGContextRelease(bitmapContext);
-	free(data);
-	[self initBitmapContext];
+	drawLayer.frame = self.layer.frame;
 }
 
-- (void)drawRect:(CGRect)rect
+- (CGFloat) drawOpacity
 {
-	rect = CGRectIntegral(rect);
-	int x = (int)rect.origin.x;
-	int y = (int)(rect.origin.y);
-	int wd = (int)rect.size.width;
-	int ht = (int)rect.size.height;
-	int fromBPR = CGBitmapContextGetBytesPerRow(bitmapContext);
-	int toBPR = wd * 4;
-	unsigned char* fromData = CGBitmapContextGetData(bitmapContext);
-	unsigned char* toData = malloc(ht * toBPR);
-	
-	for (int row = 0; row < ht; row++) {
-		memcpy(&toData[row*toBPR], &fromData[((row+y)*fromBPR)+(x*4)], toBPR);
-	}
-	
-	CGContextRef ctx = UIGraphicsGetCurrentContext();
-	CGDataProviderRef provider = CGDataProviderCreateWithData(NULL, toData, ht*toBPR, NULL);
-	CGColorSpaceRef colorSpaceRef = CGColorSpaceCreateDeviceRGB();
-	CGImageRef imageRef = CGImageCreate(wd, ht, 8, 32, toBPR, colorSpaceRef, kCGBitmapByteOrderDefault, provider, NULL, NO, kCGRenderingIntentDefault);
-	CGContextDrawImage(ctx, rect, imageRef);
-	CFRelease(imageRef);
+	return _drawOpacity;
 }
 
-- (UIColor*) drawColor
+- (void) setDrawOpacity:(CGFloat)drawOpacity
 {
-	return _drawColor;
-}
-
-- (void) setDrawColor:(UIColor *)drawColor
-{
-	_drawColor = drawColor;
-	CGContextSetStrokeColorWithColor(bitmapContext, _drawColor.CGColor);
-}
-
-- (CGFloat) drawWidth
-{
-	return _drawWidth;
-}
-
-- (void) setDrawWidth:(CGFloat)drawWidth
-{
-	_drawWidth = drawWidth;
-	CGContextSetLineWidth(bitmapContext, _drawWidth);
+	_drawOpacity = drawOpacity;
+	drawLayer.opacity = _drawOpacity;
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -118,18 +71,24 @@
 	}
 	
 	UITouch *touch = [touches anyObject];
-
 	lastPoint = [touch locationInView:self];
-	CGContextBeginPath(bitmapContext);
-	CGContextMoveToPoint(bitmapContext, lastPoint.x, lastPoint.y);
-	CGContextAddLineToPoint(bitmapContext, lastPoint.x, lastPoint.y);
-	CGContextStrokePath(bitmapContext);
+	lastPoint.y = self.frame.size.height - lastPoint.y;
 
-	[segments addObject:@[@(lastPoint.x),@(lastPoint.y),@(lastPoint.x),@(lastPoint.y)]];
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	CGContextSetLineCap(ctx, kCGLineCapRound);
+	CGContextSetLineWidth(ctx, self.drawWidth);
+	CGContextSetStrokeColorWithColor(ctx, self.drawColor.CGColor);
+	CGContextMoveToPoint(ctx, lastPoint.x, lastPoint.y);
+	CGContextAddLineToPoint(ctx, lastPoint.x, lastPoint.y);
+	CGContextStrokePath(ctx);
+	CGContextFlush(ctx);
+	drawImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
 	
-	CGFloat inset = -fabsf((_drawWidth / 2.0f) + 1.0f);
-	CGRect rect = CGRectInset(CGRectMake(lastPoint.x, 0.0f, 0.0f, self.frame.size.height), inset, 0);
-	[self setNeedsDisplayInRect:rect];
+	drawLayer.contents = (id)drawImage.CGImage;
 }
 
 
@@ -140,65 +99,82 @@
 
 	UITouch *touch = [touches anyObject];	
 	CGPoint currentPoint = [touch locationInView:self];
-	
-	CGContextBeginPath(bitmapContext);
-	CGContextMoveToPoint(bitmapContext, lastPoint.x, lastPoint.y);
-	CGContextAddLineToPoint(bitmapContext, currentPoint.x, currentPoint.y);
-	CGContextStrokePath(bitmapContext);
+	currentPoint.y = self.frame.size.height - currentPoint.y;
 
-	[segments addObject:@[@(lastPoint.x),@(lastPoint.y),@(currentPoint.x),@(currentPoint.y)]];
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+	CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	CGContextSetLineCap(ctx, kCGLineCapRound);
+	CGContextSetLineWidth(ctx, self.drawWidth);
+	CGContextSetStrokeColorWithColor(ctx, self.drawColor.CGColor);
+	CGContextMoveToPoint(ctx, lastPoint.x, lastPoint.y);
+	CGContextAddLineToPoint(ctx, currentPoint.x, currentPoint.y);
+	CGContextStrokePath(ctx);
+	CGContextFlush(ctx);
+	drawImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
 
-	CGFloat inset = -fabsf((_drawWidth / 2.0f) + 1.0f);
-	CGFloat x1 = MIN(lastPoint.x,currentPoint.x);
-	CGFloat x2 = MAX(lastPoint.x,currentPoint.x);
-	CGRect rect = CGRectInset(CGRectMake(x1, 0.0f, x2-x1, self.frame.size.height), inset, 0.0f);
-	[self setNeedsDisplayInRect:rect];
-
+	drawLayer.contents = (id)drawImage.CGImage;
 	lastPoint = currentPoint;
 }
 
-- (void)dealloc {
-	CGContextRelease(bitmapContext);
-	free(data);
+- (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	if (!self.userInteractionEnabled) {
+		return;
+	}
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+	if (image != nil) {
+		CGContextDrawImage(ctx, rect, image.CGImage);
+	}
+	CGContextSetAlpha(ctx, self.drawOpacity);
+	CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	image = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+	self.layer.contents = (id)image.CGImage;
+    drawLayer.contents = nil;
+	drawImage = nil;
+}
+
+- (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
+{
+	if (!self.userInteractionEnabled) {
+		return;
+	}
+	[self touchesEnded:touches withEvent:event];
 }
 
 - (void) clearToColor:(UIColor*)color
 {
-	self.backgroundColor = color;
-	CGContextSetFillColorWithColor(bitmapContext, color.CGColor);
-	CGContextFillRect(bitmapContext, CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height));
-	[self setNeedsDisplay];
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+	CGContextSetFillColorWithColor(ctx, color.CGColor);
+	CGContextFillRect(ctx, rect);
+	CGContextFlush(ctx);
+	image = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	self.layer.contents = image;
 }
+
 
 - (UIImage*) getSketch;
 {
-	size_t wd = (size_t)self.frame.size.width;
-	size_t ht = (size_t)self.frame.size.height;
-	
-	void* tmpdata = malloc(ht*wd*4);
-	CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-	CGContextRef tmpBitmapContext = CGBitmapContextCreate(tmpdata, wd, ht, 8, wd*4, colorSpace, kCGImageAlphaPremultipliedLast);
-	CFRelease(colorSpace);
-	CGContextTranslateCTM(tmpBitmapContext, 0.0f, self.frame.size.height);
-	CGContextScaleCTM(tmpBitmapContext, 1.0f, -1.0f);
-	CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
-	CGContextDrawImage(tmpBitmapContext, CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height), cgImage);
-	CFRelease(cgImage);
-	cgImage = CGBitmapContextCreateImage(tmpBitmapContext);
-	UIImage *image = [UIImage imageWithCGImage:cgImage];
-	CFRelease(cgImage);
-	CGContextRelease(tmpBitmapContext);
-	free(tmpdata);
 	return image;
 }
 
 - (void) setSketch:(UIImage*)sketch
 {
-	CGContextSaveGState(bitmapContext);
-	CGContextTranslateCTM(bitmapContext, 0.0f, self.frame.size.height);
-	CGContextScaleCTM(bitmapContext, 1.0f, -1.0f);
-	CGContextDrawImage(bitmapContext, self.bounds, sketch.CGImage);
-	CGContextRestoreGState(bitmapContext);
+	image = sketch;
+	self.layer.contents = (id)sketch.CGImage;
 }
 
 @end
