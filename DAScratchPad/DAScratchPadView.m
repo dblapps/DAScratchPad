@@ -12,21 +12,31 @@
 @implementation DAScratchPadView
 {
 	CGFloat _drawOpacity;
+	CGFloat _airBrushFlow;
+	CGFloat _airBrushRate;
 	CALayer* drawLayer;
-	UIImage* image;
+	UIImage* mainImage;
 	UIImage* drawImage;
 	CGPoint lastPoint;
+	CGPoint currentPoint;
+	NSTimer* airBrushTimer;
+	UIImage* airBrushImage;
 }
 
 - (void) initCommon
 {
+	_toolType = DAScratchPadToolTypePaint;
 	_drawColor = [UIColor blackColor];
 	_drawWidth = 5.0f;
 	_drawOpacity = 1.0f;
+	_airBrushFlow = 0.5f;
+	_airBrushRate = 0.5f;
 	drawLayer = [[CALayer alloc] init];
 	drawLayer.frame = self.layer.frame;
-	image = nil;
+	mainImage = nil;
 	drawImage = nil;
+	airBrushTimer = nil;
+	airBrushImage = nil;
 	[self.layer addSublayer:drawLayer];
 	[self clearToColor:self.backgroundColor];
 }
@@ -62,91 +72,201 @@
 	drawLayer.opacity = _drawOpacity;
 }
 
+- (CGFloat) airBrushFlow
+{
+	return _airBrushFlow;
+}
+
+- (void) setAirBrushFlow:(CGFloat)airBrushFlow
+{
+	_airBrushFlow = MIN(MAX(airBrushFlow, 0.0f), 1.0f);
+}
+
+- (CGFloat) airBrushRate
+{
+	return _airBrushRate;
+}
+
+- (void) setAirBrushRate:(CGFloat)airBrushRate
+{
+	_airBrushRate = MIN(MAX(airBrushRate, 0.0f), 1.0f);
+}
+
+- (void) drawLineFrom:(CGPoint)from to:(CGPoint)to width:(CGFloat)width
+{
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	if (drawImage != nil) {
+		CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+		CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	}
+	CGContextSetLineCap(ctx, kCGLineCapRound);
+	CGContextSetLineWidth(ctx, width);
+	CGContextSetStrokeColorWithColor(ctx, self.drawColor.CGColor);
+	CGContextMoveToPoint(ctx, from.x, from.y);
+	CGContextAddLineToPoint(ctx, to.x, to.y);
+	CGContextStrokePath(ctx);
+	CGContextFlush(ctx);
+	drawImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	drawLayer.contents = (id)drawImage.CGImage;
+}
+
+- (void) drawImage:(UIImage*)image at:(CGPoint)point
+{
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	if (drawImage != nil) {
+		CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+		CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	}
+	CGRect rect = CGRectMake(point.x - (image.size.width / 2.0f),
+							 point.y - (image.size.height / 2.0f),
+							 image.size.width, image.size.height);
+	CGContextDrawImage(ctx, rect, image.CGImage);
+	CGContextFlush(ctx);
+	drawImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	drawLayer.contents = (id)drawImage.CGImage;
+}
+
+- (void) commitDrawingWithOpacity:(CGFloat)opacity
+{
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+	if (mainImage != nil) {
+		CGContextDrawImage(ctx, rect, mainImage.CGImage);
+	}
+	CGContextSetAlpha(ctx, opacity);
+	CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	mainImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+	
+	self.layer.contents = (id)mainImage.CGImage;
+    drawLayer.contents = nil;
+	drawImage = nil;
+}
+
+- (void)paintTouchesBegan
+{
+	drawLayer.opacity = self.drawOpacity;
+	[self drawLineFrom:lastPoint to:lastPoint width:self.drawWidth];
+}
+
+- (void)paintTouchesMoved
+{
+	[self drawLineFrom:lastPoint to:currentPoint width:self.drawWidth];
+}
+
+- (void) paintTouchesEnded
+{
+	[self commitDrawingWithOpacity:self.drawOpacity];
+}
+
+- (void) airBrushTimerExpired:(NSTimer*)timer
+{
+	[self drawImage:airBrushImage at:lastPoint];
+}
+
+- (void) airBrushTouchesBegan
+{
+	UIGraphicsBeginImageContext(CGSizeMake(self.drawWidth, self.drawWidth));
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextSetFillColorWithColor(ctx, self.drawColor.CGColor);
+	CGContextSetAlpha(ctx, 0.005f + (self.airBrushFlow / 50.0f));
+	for (CGFloat wd = 0.0f; wd <= self.drawWidth; wd += 1.0f) {
+		CGFloat mid = (self.drawWidth - wd) / 2.0f;
+		CGContextFillEllipseInRect(ctx, CGRectMake(mid, mid, wd, wd));
+	}
+	CGContextFlush(ctx);
+	airBrushImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+
+	airBrushTimer = [NSTimer scheduledTimerWithTimeInterval:(9.0f - (self.airBrushRate * 8.0f)) / 60.0f
+													 target:self
+												   selector:@selector(airBrushTimerExpired:)
+												   userInfo:nil
+													repeats:YES];
+}
+
+- (void) airBrushTouchesMoved
+{
+}
+
+- (void) airBrushTouchesEnded
+{
+	[airBrushTimer invalidate];
+	airBrushTimer = nil;
+	airBrushImage = nil;
+	[self commitDrawingWithOpacity:self.drawOpacity];
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-	[super touchesBegan:touches withEvent:event];
-	
 	if (!self.userInteractionEnabled) {
+		[super touchesBegan:touches withEvent:event];
 		return;
 	}
 	
 	UITouch *touch = [touches anyObject];
 	lastPoint = [touch locationInView:self];
 	lastPoint.y = self.frame.size.height - lastPoint.y;
-
-	UIGraphicsBeginImageContext(self.frame.size);
-	CGContextRef ctx = UIGraphicsGetCurrentContext();
-	CGContextScaleCTM(ctx, 1.0f, -1.0f);
-	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
-	CGContextSetLineCap(ctx, kCGLineCapRound);
-	CGContextSetLineWidth(ctx, self.drawWidth);
-	CGContextSetStrokeColorWithColor(ctx, self.drawColor.CGColor);
-	CGContextMoveToPoint(ctx, lastPoint.x, lastPoint.y);
-	CGContextAddLineToPoint(ctx, lastPoint.x, lastPoint.y);
-	CGContextStrokePath(ctx);
-	CGContextFlush(ctx);
-	drawImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
 	
-	drawLayer.contents = (id)drawImage.CGImage;
+	if (self.toolType == DAScratchPadToolTypePaint) {
+		[self paintTouchesBegan];
+	}
+	if (self.toolType == DAScratchPadToolTypeAirBrush) {
+		[self airBrushTouchesBegan];
+	}
 }
 
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
 	if (!self.userInteractionEnabled) {
+		[super touchesMoved:touches withEvent:event];
 		return;
 	}
 
 	UITouch *touch = [touches anyObject];	
-	CGPoint currentPoint = [touch locationInView:self];
+	currentPoint = [touch locationInView:self];
 	currentPoint.y = self.frame.size.height - currentPoint.y;
 
-	UIGraphicsBeginImageContext(self.frame.size);
-	CGContextRef ctx = UIGraphicsGetCurrentContext();
-	CGContextScaleCTM(ctx, 1.0f, -1.0f);
-	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
-	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
-	CGContextDrawImage(ctx, rect, drawImage.CGImage);
-	CGContextSetLineCap(ctx, kCGLineCapRound);
-	CGContextSetLineWidth(ctx, self.drawWidth);
-	CGContextSetStrokeColorWithColor(ctx, self.drawColor.CGColor);
-	CGContextMoveToPoint(ctx, lastPoint.x, lastPoint.y);
-	CGContextAddLineToPoint(ctx, currentPoint.x, currentPoint.y);
-	CGContextStrokePath(ctx);
-	CGContextFlush(ctx);
-	drawImage = UIGraphicsGetImageFromCurrentImageContext();
-	UIGraphicsEndImageContext();
+	if (self.toolType == DAScratchPadToolTypePaint) {
+		[self paintTouchesMoved];
+	}
+	if (self.toolType == DAScratchPadToolTypeAirBrush) {
+		[self airBrushTouchesMoved];
+	}
 
-	drawLayer.contents = (id)drawImage.CGImage;
 	lastPoint = currentPoint;
 }
 
 - (void) touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (!self.userInteractionEnabled) {
+		[super touchesEnded:touches withEvent:event];
 		return;
 	}
-	UIGraphicsBeginImageContext(self.frame.size);
-	CGContextRef ctx = UIGraphicsGetCurrentContext();
-	CGContextScaleCTM(ctx, 1.0f, -1.0f);
-	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
-	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
-	if (image != nil) {
-		CGContextDrawImage(ctx, rect, image.CGImage);
+	
+	if (self.toolType == DAScratchPadToolTypePaint) {
+		[self paintTouchesEnded];
 	}
-	CGContextSetAlpha(ctx, self.drawOpacity);
-	CGContextDrawImage(ctx, rect, drawImage.CGImage);
-	image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-	self.layer.contents = (id)image.CGImage;
-    drawLayer.contents = nil;
-	drawImage = nil;
+	if (self.toolType == DAScratchPadToolTypeAirBrush) {
+		[self airBrushTouchesEnded];
+	}
 }
 
 - (void) touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event
 {
 	if (!self.userInteractionEnabled) {
+		[super touchesCancelled:touches withEvent:event];
 		return;
 	}
 	[self touchesEnded:touches withEvent:event];
@@ -160,20 +280,20 @@
 	CGContextSetFillColorWithColor(ctx, color.CGColor);
 	CGContextFillRect(ctx, rect);
 	CGContextFlush(ctx);
-	image = UIGraphicsGetImageFromCurrentImageContext();
+	mainImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	self.layer.contents = image;
+	self.layer.contents = mainImage;
 }
 
 
 - (UIImage*) getSketch;
 {
-	return image;
+	return mainImage;
 }
 
 - (void) setSketch:(UIImage*)sketch
 {
-	image = sketch;
+	mainImage = sketch;
 	self.layer.contents = (id)sketch.CGImage;
 }
 

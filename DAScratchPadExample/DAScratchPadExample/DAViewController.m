@@ -11,11 +11,17 @@
 
 @interface DAViewController ()
 @property (unsafe_unretained, nonatomic) IBOutlet DAScratchPadView *scratchPad;
+@property (unsafe_unretained, nonatomic) IBOutlet UISlider *airbrushFlowSlider;
+@property (unsafe_unretained, nonatomic) IBOutlet UISlider *airbrushRateSlider;
 - (IBAction)setColor:(id)sender;
 - (IBAction)setWidth:(id)sender;
 - (IBAction)setOpacity:(id)sender;
 - (IBAction)clear:(id)sender;
 - (IBAction)selectImage:(id)sender;
+- (IBAction)paint:(id)sender;
+- (IBAction)airbrush:(id)sender;
+- (IBAction)airbrushFlow:(id)sender;
+- (IBAction)airbrushRate:(id)sender;
 @end
 
 @implementation DAViewController
@@ -31,16 +37,21 @@
 	images[0] = nil;
 	images[1] = nil;
 	images[2] = nil;
-	// Do any additional setup after loading the view, typically from a nib.
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		self.airbrushFlowSlider.transform = CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI/2.0f), -30.0f, -35.0f);
+		self.airbrushRateSlider.transform = CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI/2.0f), 0.0f, -35.0f);
+	}
 }
 
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
+
 - (void)viewDidUnload {
 	[self setScratchPad:nil];
+	[self setAirbrushFlowSlider:nil];
+	[self setAirbrushRateSlider:nil];
 	[super viewDidUnload];
 }
 
@@ -73,6 +84,28 @@
 	UIButton* button = (UIButton*)sender;
 	curImage = button.tag;
 	[self.scratchPad setSketch:images[curImage]];
+}
+
+- (IBAction)paint:(id)sender
+{
+	self.scratchPad.toolType = DAScratchPadToolTypePaint;
+}
+
+- (IBAction)airbrush:(id)sender
+{
+	self.scratchPad.toolType = DAScratchPadToolTypeAirBrush;
+}
+
+- (IBAction)airbrushFlow:(id)sender
+{
+	UISlider* slider = (UISlider*)sender;
+	self.scratchPad.airBrushFlow = slider.value;
+}
+
+- (IBAction)airbrushRate:(id)sender
+{
+	UISlider* slider = (UISlider*)sender;
+	self.scratchPad.airBrushRate = slider.value;
 }
 
 @end
