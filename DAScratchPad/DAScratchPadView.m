@@ -32,7 +32,7 @@
 	_airBrushFlow = 0.5f;
 	_airBrushRate = 0.5f;
 	drawLayer = [[CALayer alloc] init];
-	drawLayer.frame = self.layer.frame;
+	drawLayer.frame = CGRectMake(0.0f, 0.0f, self.layer.frame.size.width, self.layer.frame.size.height);
 	mainImage = nil;
 	drawImage = nil;
 	airBrushTimer = nil;
@@ -58,7 +58,7 @@
 
 - (void) layoutSubviews
 {
-	drawLayer.frame = self.layer.frame;
+	drawLayer.frame = CGRectMake(0.0f, 0.0f, self.layer.frame.size.width, self.layer.frame.size.height);
 }
 
 - (CGFloat) drawOpacity
