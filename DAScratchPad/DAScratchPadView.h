@@ -21,7 +21,6 @@ typedef enum {
 @property (assign) CGFloat drawWidth;
 @property (assign) CGFloat drawOpacity;
 @property (assign) CGFloat airBrushFlow;
-@property (assign) CGFloat airBrushRate;
 
 - (void) clearToColor:(UIColor*)color;
 

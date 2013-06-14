@@ -8,11 +8,11 @@
 
 #import "DAViewController.h"
 #import "DAScratchPadView.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface DAViewController ()
 @property (unsafe_unretained, nonatomic) IBOutlet DAScratchPadView *scratchPad;
 @property (unsafe_unretained, nonatomic) IBOutlet UISlider *airbrushFlowSlider;
-@property (unsafe_unretained, nonatomic) IBOutlet UISlider *airbrushRateSlider;
 - (IBAction)setColor:(id)sender;
 - (IBAction)setWidth:(id)sender;
 - (IBAction)setOpacity:(id)sender;
@@ -21,7 +21,6 @@
 - (IBAction)paint:(id)sender;
 - (IBAction)airbrush:(id)sender;
 - (IBAction)airbrushFlow:(id)sender;
-- (IBAction)airbrushRate:(id)sender;
 @end
 
 @implementation DAViewController
@@ -39,7 +38,6 @@
 	images[2] = nil;
 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
 		self.airbrushFlowSlider.transform = CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI/2.0f), -30.0f, -35.0f);
-		self.airbrushRateSlider.transform = CGAffineTransformTranslate(CGAffineTransformMakeRotation(-M_PI/2.0f), 0.0f, -35.0f);
 	}
 }
 
@@ -51,7 +49,6 @@
 - (void)viewDidUnload {
 	[self setScratchPad:nil];
 	[self setAirbrushFlowSlider:nil];
-	[self setAirbrushRateSlider:nil];
 	[super viewDidUnload];
 }
 
@@ -100,12 +97,6 @@
 {
 	UISlider* slider = (UISlider*)sender;
 	self.scratchPad.airBrushFlow = slider.value;
-}
-
-- (IBAction)airbrushRate:(id)sender
-{
-	UISlider* slider = (UISlider*)sender;
-	self.scratchPad.airBrushRate = slider.value;
 }
 
 @end

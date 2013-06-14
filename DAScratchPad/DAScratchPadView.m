@@ -13,12 +13,12 @@
 {
 	CGFloat _drawOpacity;
 	CGFloat _airBrushFlow;
-	CGFloat _airBrushRate;
 	CALayer* drawLayer;
 	UIImage* mainImage;
 	UIImage* drawImage;
 	CGPoint lastPoint;
 	CGPoint currentPoint;
+	CGPoint airbrushPoint;
 	NSTimer* airBrushTimer;
 	UIImage* airBrushImage;
 }
@@ -30,7 +30,6 @@
 	_drawWidth = 5.0f;
 	_drawOpacity = 1.0f;
 	_airBrushFlow = 0.5f;
-	_airBrushRate = 0.5f;
 	drawLayer = [[CALayer alloc] init];
 	drawLayer.frame = CGRectMake(0.0f, 0.0f, self.layer.frame.size.width, self.layer.frame.size.height);
 	mainImage = nil;
@@ -82,16 +81,6 @@
 	_airBrushFlow = MIN(MAX(airBrushFlow, 0.0f), 1.0f);
 }
 
-- (CGFloat) airBrushRate
-{
-	return _airBrushRate;
-}
-
-- (void) setAirBrushRate:(CGFloat)airBrushRate
-{
-	_airBrushRate = MIN(MAX(airBrushRate, 0.0f), 1.0f);
-}
-
 - (void) drawLineFrom:(CGPoint)from to:(CGPoint)to width:(CGFloat)width
 {
 	UIGraphicsBeginImageContext(self.frame.size);
@@ -128,6 +117,38 @@
 							 point.y - (image.size.height / 2.0f),
 							 image.size.width, image.size.height);
 	CGContextDrawImage(ctx, rect, image.CGImage);
+	CGContextFlush(ctx);
+	drawImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	drawLayer.contents = (id)drawImage.CGImage;
+}
+
+- (void) drawImage:(UIImage*)image from:(CGPoint)fromPoint to:(CGPoint)toPoint
+{
+	CGFloat dx = toPoint.x - fromPoint.x;
+	CGFloat dy = toPoint.y - fromPoint.y;
+	CGFloat len = sqrtf((dx*dx)+(dy*dy));
+	CGFloat ix = dx/len;
+	CGFloat iy = dy/len;
+	CGPoint point = fromPoint;
+	int ilen = (int)len;
+
+	UIGraphicsBeginImageContext(self.frame.size);
+	CGContextRef ctx = UIGraphicsGetCurrentContext();
+	CGContextScaleCTM(ctx, 1.0f, -1.0f);
+	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
+	if (drawImage != nil) {
+		CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
+		CGContextDrawImage(ctx, rect, drawImage.CGImage);
+	}
+	for (int i = 0; i < ilen; i++) {
+		CGRect rect = CGRectMake(point.x - (image.size.width / 2.0f),
+								 point.y - (image.size.height / 2.0f),
+								 image.size.width, image.size.height);
+		CGContextDrawImage(ctx, rect, image.CGImage);
+		point.x += ix;
+		point.y += iy;
+	}
 	CGContextFlush(ctx);
 	drawImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
@@ -172,24 +193,32 @@
 
 - (void) airBrushTimerExpired:(NSTimer*)timer
 {
-	[self drawImage:airBrushImage at:lastPoint];
+	if ((lastPoint.x == airbrushPoint.x) && (lastPoint.y == airbrushPoint.y)) {
+		[self drawImage:airBrushImage at:lastPoint];
+	}
+	airbrushPoint = lastPoint;
 }
 
 - (void) airBrushTouchesBegan
 {
 	UIGraphicsBeginImageContext(CGSizeMake(self.drawWidth, self.drawWidth));
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
-	CGContextSetFillColorWithColor(ctx, self.drawColor.CGColor);
-	CGContextSetAlpha(ctx, 0.005f + (self.airBrushFlow / 50.0f));
-	for (CGFloat wd = 0.0f; wd <= self.drawWidth; wd += 1.0f) {
-		CGFloat mid = (self.drawWidth - wd) / 2.0f;
-		CGContextFillEllipseInRect(ctx, CGRectMake(mid, mid, wd, wd));
-	}
+	CGFloat wd = self.drawWidth / 2.0f;
+	CGPoint pt = CGPointMake(wd, wd);
+	CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+	size_t num_locations = 2;
+	CGFloat locations[2] = { 1.0, 0.0 };
+	CGFloat* comp = (CGFloat *)CGColorGetComponents(self.drawColor.CGColor);
+	CGFloat fc = sinf(((self.airBrushFlow/5.0f)*M_PI)/2.0f);
+	CGFloat colors[8] = { comp[0], comp[1], comp[2], 0.0f, comp[0], comp[1], comp[2], fc };
+	CGGradientRef gradient = CGGradientCreateWithColorComponents(colorspace, colors, locations, num_locations);
+	CGContextDrawRadialGradient(ctx, gradient, pt, 0.0f, pt, wd, 0);
 	CGContextFlush(ctx);
 	airBrushImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-
-	airBrushTimer = [NSTimer scheduledTimerWithTimeInterval:(9.0f - (self.airBrushRate * 8.0f)) / 60.0f
+	
+	airbrushPoint = CGPointMake(-5000.0f, -5000.0f);
+	airBrushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f / 60.0f
 													 target:self
 												   selector:@selector(airBrushTimerExpired:)
 												   userInfo:nil
@@ -198,6 +227,7 @@
 
 - (void) airBrushTouchesMoved
 {
+	[self drawImage:airBrushImage from:lastPoint to:currentPoint];
 }
 
 - (void) airBrushTouchesEnded
