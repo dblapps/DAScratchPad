@@ -216,6 +216,8 @@
 	CGContextFlush(ctx);
 	airBrushImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
+	CFRelease(gradient);
+	CFRelease(colorspace);
 	
 	airbrushPoint = CGPointMake(-5000.0f, -5000.0f);
 	airBrushTimer = [NSTimer scheduledTimerWithTimeInterval:1.0f / 60.0f
