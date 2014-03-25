@@ -325,8 +325,15 @@
 
 - (void) setSketch:(UIImage*)sketch
 {
-	mainImage = sketch;
-	self.layer.contents = (id)sketch.CGImage;
+	UIImageView* imageView = [[UIImageView alloc] initWithFrame:self.bounds];
+	imageView.contentMode = self.contentMode;
+	imageView.image = sketch;
+	imageView.backgroundColor = self.backgroundColor;
+	UIGraphicsBeginImageContextWithOptions(self.bounds.size, YES, 0.0f);
+	[imageView.layer renderInContext:UIGraphicsGetCurrentContext()];
+	mainImage = UIGraphicsGetImageFromCurrentImageContext();
+	UIGraphicsEndImageContext();
+	[self commitDrawingWithOpacity:1.0f];
 }
 
 @end

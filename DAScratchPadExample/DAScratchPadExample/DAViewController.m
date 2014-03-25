@@ -13,6 +13,7 @@
 @interface DAViewController ()
 @property (unsafe_unretained, nonatomic) IBOutlet DAScratchPadView *scratchPad;
 @property (unsafe_unretained, nonatomic) IBOutlet UISlider *airbrushFlowSlider;
+- (IBAction)nextImage:(id)sender;
 - (IBAction)setColor:(id)sender;
 - (IBAction)setWidth:(id)sender;
 - (IBAction)setOpacity:(id)sender;
@@ -50,6 +51,29 @@
 	[self setScratchPad:nil];
 	[self setAirbrushFlowSlider:nil];
 	[super viewDidUnload];
+}
+
+- (IBAction)nextImage:(id)sender
+{
+	static NSArray* ETimages = nil;
+	static NSInteger curETImage = 0;
+	if (ETimages == nil) {
+		ETimages = @[
+					 @"ETup.jpg",
+					 @"ETdown.jpg",
+					 @"ETleft.jpg",
+					 @"ETright.jpg",
+					 @"ETupMirrored.jpg",
+					 @"ETdownMirrored.jpg",
+					 @"ETleftMirrored.jpg",
+					 @"ETrightMirrored.jpg"
+					 ];
+	}
+	[self.scratchPad setSketch:[UIImage imageNamed:ETimages[curETImage]]];
+	curETImage++;
+	if (curETImage >= ETimages.count) {
+		curETImage = 0;
+	}
 }
 
 - (IBAction)setColor:(id)sender

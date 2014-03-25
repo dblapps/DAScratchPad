@@ -7,6 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C6E428018E1D247001EFA49 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C6E427F18E1D247001EFA49 /* AVFoundation.framework */; };
+		4C6E428818E1FC22001EFA49 /* ETdown.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428118E1FC22001EFA49 /* ETdown.jpg */; };
+		4C6E428918E1FC22001EFA49 /* ETupMirrored.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428218E1FC22001EFA49 /* ETupMirrored.jpg */; };
+		4C6E428A18E1FC22001EFA49 /* ETright.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428318E1FC22001EFA49 /* ETright.jpg */; };
+		4C6E428B18E1FC22001EFA49 /* ETrightMirrored.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428418E1FC22001EFA49 /* ETrightMirrored.jpg */; };
+		4C6E428C18E1FC22001EFA49 /* ETleft.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428518E1FC22001EFA49 /* ETleft.jpg */; };
+		4C6E428D18E1FC22001EFA49 /* ETleftMirrored.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428618E1FC22001EFA49 /* ETleftMirrored.jpg */; };
+		4C6E428E18E1FC22001EFA49 /* ETup.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428718E1FC22001EFA49 /* ETup.jpg */; };
+		4C6E429018E1FCB7001EFA49 /* ETdownMirrored.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 4C6E428F18E1FCB7001EFA49 /* ETdownMirrored.jpg */; };
 		4CA49E231759439000380086 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CA49E221759439000380086 /* UIKit.framework */; };
 		4CA49E251759439000380086 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CA49E241759439000380086 /* Foundation.framework */; };
 		4CA49E271759439000380086 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CA49E261759439000380086 /* CoreGraphics.framework */; };
@@ -24,6 +33,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4C6E427F18E1D247001EFA49 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		4C6E428118E1FC22001EFA49 /* ETdown.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETdown.jpg; sourceTree = "<group>"; };
+		4C6E428218E1FC22001EFA49 /* ETupMirrored.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETupMirrored.jpg; sourceTree = "<group>"; };
+		4C6E428318E1FC22001EFA49 /* ETright.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETright.jpg; sourceTree = "<group>"; };
+		4C6E428418E1FC22001EFA49 /* ETrightMirrored.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETrightMirrored.jpg; sourceTree = "<group>"; };
+		4C6E428518E1FC22001EFA49 /* ETleft.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETleft.jpg; sourceTree = "<group>"; };
+		4C6E428618E1FC22001EFA49 /* ETleftMirrored.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETleftMirrored.jpg; sourceTree = "<group>"; };
+		4C6E428718E1FC22001EFA49 /* ETup.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETup.jpg; sourceTree = "<group>"; };
+		4C6E428F18E1FCB7001EFA49 /* ETdownMirrored.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = ETdownMirrored.jpg; sourceTree = "<group>"; };
 		4CA49E1F1759439000380086 /* DAScratchPadExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DAScratchPadExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4CA49E221759439000380086 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		4CA49E241759439000380086 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -51,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C6E428018E1D247001EFA49 /* AVFoundation.framework in Frameworks */,
 				4CA49E76175BD59800380086 /* QuartzCore.framework in Frameworks */,
 				4CA49E231759439000380086 /* UIKit.framework in Frameworks */,
 				4CA49E251759439000380086 /* Foundation.framework in Frameworks */,
@@ -82,6 +101,7 @@
 		4CA49E211759439000380086 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4C6E427F18E1D247001EFA49 /* AVFoundation.framework */,
 				4CA49E221759439000380086 /* UIKit.framework */,
 				4CA49E241759439000380086 /* Foundation.framework */,
 				4CA49E261759439000380086 /* CoreGraphics.framework */,
@@ -99,6 +119,14 @@
 				4CA49E3B1759439000380086 /* DAViewController.m */,
 				4CA49E3D1759439000380086 /* DAViewController_iPhone.xib */,
 				4CA49E401759439000380086 /* DAViewController_iPad.xib */,
+				4C6E428718E1FC22001EFA49 /* ETup.jpg */,
+				4C6E428118E1FC22001EFA49 /* ETdown.jpg */,
+				4C6E428518E1FC22001EFA49 /* ETleft.jpg */,
+				4C6E428318E1FC22001EFA49 /* ETright.jpg */,
+				4C6E428218E1FC22001EFA49 /* ETupMirrored.jpg */,
+				4C6E428F18E1FCB7001EFA49 /* ETdownMirrored.jpg */,
+				4C6E428618E1FC22001EFA49 /* ETleftMirrored.jpg */,
+				4C6E428418E1FC22001EFA49 /* ETrightMirrored.jpg */,
 				4CA49E291759439000380086 /* Supporting Files */,
 			);
 			path = DAScratchPadExample;
@@ -180,12 +208,20 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4C6E428C18E1FC22001EFA49 /* ETleft.jpg in Resources */,
+				4C6E428D18E1FC22001EFA49 /* ETleftMirrored.jpg in Resources */,
+				4C6E428A18E1FC22001EFA49 /* ETright.jpg in Resources */,
 				4CA49E2D1759439000380086 /* InfoPlist.strings in Resources */,
+				4C6E428818E1FC22001EFA49 /* ETdown.jpg in Resources */,
 				4CA49E351759439000380086 /* Default.png in Resources */,
 				4CA49E371759439000380086 /* Default@2x.png in Resources */,
 				4CA49E391759439000380086 /* Default-568h@2x.png in Resources */,
 				4CA49E3F1759439000380086 /* DAViewController_iPhone.xib in Resources */,
+				4C6E428918E1FC22001EFA49 /* ETupMirrored.jpg in Resources */,
 				4CA49E421759439000380086 /* DAViewController_iPad.xib in Resources */,
+				4C6E428E18E1FC22001EFA49 /* ETup.jpg in Resources */,
+				4C6E428B18E1FC22001EFA49 /* ETrightMirrored.jpg in Resources */,
+				4C6E429018E1FCB7001EFA49 /* ETdownMirrored.jpg in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
