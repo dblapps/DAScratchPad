@@ -328,8 +328,9 @@
 	UIImageView* imageView = [[UIImageView alloc] initWithFrame:self.bounds];
 	imageView.contentMode = self.contentMode;
 	imageView.image = sketch;
-	imageView.backgroundColor = self.backgroundColor;
+	imageView.backgroundColor = [UIColor clearColor];
 	UIGraphicsBeginImageContextWithOptions(self.bounds.size, YES, 0.0f);
+	UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
 	[imageView.layer renderInContext:UIGraphicsGetCurrentContext()];
 	mainImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
