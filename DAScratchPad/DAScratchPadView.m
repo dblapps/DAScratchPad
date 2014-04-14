@@ -157,7 +157,7 @@
 
 - (void) commitDrawingWithOpacity:(CGFloat)opacity
 {
-	UIGraphicsBeginImageContext(self.frame.size);
+	UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 1.0);
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
 	CGContextScaleCTM(ctx, 1.0f, -1.0f);
 	CGContextTranslateCTM(ctx, 0.0f, -self.frame.size.height);
@@ -306,7 +306,7 @@
 
 - (void) clearToColor:(UIColor*)color
 {
-	UIGraphicsBeginImageContext(self.frame.size);
+	UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 1.0);
 	CGContextRef ctx = UIGraphicsGetCurrentContext();
 	CGRect rect = CGRectMake(0.0f, 0.0f, self.frame.size.width, self.frame.size.height);
 	CGContextSetFillColorWithColor(ctx, color.CGColor);
@@ -314,7 +314,7 @@
 	CGContextFlush(ctx);
 	mainImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();
-	self.layer.contents = mainImage;
+	self.layer.contents = (id)mainImage.CGImage;
 }
 
 
@@ -329,8 +329,7 @@
 	imageView.contentMode = self.contentMode;
 	imageView.image = sketch;
 	imageView.backgroundColor = [UIColor clearColor];
-	UIGraphicsBeginImageContextWithOptions(self.bounds.size, YES, 0.0f);
-	UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
+	UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 1.0);
 	[imageView.layer renderInContext:UIGraphicsGetCurrentContext()];
 	mainImage = UIGraphicsGetImageFromCurrentImageContext();
 	UIGraphicsEndImageContext();

@@ -96,7 +96,7 @@
 
 - (IBAction)clear:(id)sender
 {
-	[self.scratchPad clearToColor:[UIColor whiteColor]];
+	[self.scratchPad clearToColor:[UIColor clearColor]];
 }
 
 - (IBAction)selectImage:(id)sender
